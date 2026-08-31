@@ -1,0 +1,28 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Add a NOMOS device",
+        "description": "Connect a NOMOS device to Home Assistant over MQTT.",
+        "data": {
+          "device_type": "Device type",
+          "device_id": "Device ID (used in MQTT topics)",
+          "name": "Name"
+        }
+      }
+    },
+    "error": {
+      "invalid_device_id": "Enter a device ID made of letters, numbers, and underscores."
+    },
+    "abort": {
+      "already_configured": "This device is already configured."
+    }
+  },
+  "selector": {
+    "device_type": {
+      "options": {
+        "scale": "Scale"
+      }
+    }
+  }
+}
