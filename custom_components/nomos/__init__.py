@@ -8,8 +8,9 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_NAME, Platform
 from homeassistant.core import HomeAssistant
 
-from .const import CONF_DEVICE_ID, CONF_DEVICE_TYPE, DOMAIN
+from .const import CONF_DEVICE_ID, CONF_DEVICE_TYPE, DOMAIN, progress_topic
 from .models import DEVICE_TYPES
+from .progress import NomosProgressState
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -19,6 +20,7 @@ PLATFORMS: list[Platform] = [
     Platform.BUTTON,
     Platform.TEXT,
     Platform.SWITCH,
+    Platform.NUMBER,
 ]
 
 
@@ -33,7 +35,13 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     )
 
     hass.data.setdefault(DOMAIN, {})
-    hass.data[DOMAIN][entry.entry_id] = entry.data
+    entry_state: dict = {"config": entry.data}
+    if device_type.has_progress:
+        entry_state["progress"] = NomosProgressState(
+            hass=hass,
+            topic=progress_topic(entry.data[CONF_DEVICE_TYPE], entry.data[CONF_DEVICE_ID]),
+        )
+    hass.data[DOMAIN][entry.entry_id] = entry_state
 
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
     _LOGGER.debug("Forwarded entry %s to platforms: %s", entry.entry_id, PLATFORMS)

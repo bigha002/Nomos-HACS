@@ -45,3 +45,12 @@ def title_topic(device_type: str, device_id: str) -> str:
     bare-string convention since there's only ever one value.
     """
     return f"nomos/{device_type}/{device_id}/title"
+
+
+def progress_topic(device_type: str, device_id: str) -> str:
+    """Return the MQTT topic a device of this type/ID listens for its progress bar on.
+
+    Payload is {"title": str, "percent": int} -- an empty title is the
+    signal to the device that no progress bar should be shown right now.
+    """
+    return f"nomos/{device_type}/{device_id}/progress"

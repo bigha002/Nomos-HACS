@@ -84,6 +84,9 @@ async def async_setup_entry(
     if device_type.has_title:
         entities.append(NomosScreenTitleText(entry))
 
+    if device_type.has_progress:
+        entities.append(NomosProgressTitleText(entry, hass))
+
     async_add_entities(entities)
 
 
@@ -172,3 +175,46 @@ class NomosScreenTitleText(TextEntity, RestoreEntity):
         self._attr_native_value = value
         self.async_write_ha_state()
         await self._publish()
+
+
+class NomosProgressTitleText(TextEntity, RestoreEntity):
+    """The progress bar's title.
+
+    Non-empty shows the progress bar on the device (over its bottom two stat
+    rows); empty is the signal to hide it and restore those rows. See
+    number.py for the Percent half of this same payload -- both share one
+    NomosProgressState (see progress.py) stashed in hass.data by __init__.py.
+    """
+
+    _attr_should_poll = False
+    _attr_has_entity_name = True
+    _attr_native_max_value = STAT_MAX_LENGTH
+
+    def __init__(self, entry: ConfigEntry, hass: HomeAssistant) -> None:
+        """Initialize the progress title entity."""
+        self._entry_id = entry.entry_id
+        self._state = hass.data[DOMAIN][entry.entry_id]["progress"]
+        device_type = entry.data[CONF_DEVICE_TYPE]
+
+        self._attr_unique_id = f"{entry.unique_id}_progress_title"
+        self._attr_name = "Progress Title"
+        self._attr_native_value = ""  # see NomosStatSlotText.__init__ for why this is required
+        self._attr_device_info = _device_info(entry, device_type)
+
+    async def async_added_to_hass(self) -> None:
+        """Restore the last known value across restarts and push it to the device."""
+        await super().async_added_to_hass()
+
+        last_state = await self.async_get_last_state()
+        if last_state is not None and last_state.state not in (None, "unknown", "unavailable"):
+            self._attr_native_value = last_state.state
+            self._state.title = last_state.state
+            await self._state.publish()
+
+    async def async_set_value(self, value: str) -> None:
+        """Set the progress title and push the combined progress payload."""
+        _LOGGER.debug("Progress title set for entry %s: %r", self._entry_id, value)
+        self._attr_native_value = value
+        self._state.title = value
+        self.async_write_ha_state()
+        await self._state.publish()

@@ -72,6 +72,12 @@ class NomosDeviceType:
     # Whether this device type gets a single "Screen Title" text entity,
     # published as a raw string (not JSON) to its own topic (see text.py).
     has_title: bool = False
+    # Whether this device type gets a "Progress Title" text entity (text.py)
+    # and a "Progress Percent" number entity (number.py), combined into one
+    # {"title": ..., "percent": ...} payload on the progress topic. An empty
+    # title tells the device to hide the progress bar. See progress.py for
+    # the shared state the two entities publish through.
+    has_progress: bool = False
 
 
 # --- NOMOS Scale ------------------------------------------------------------
@@ -136,6 +142,7 @@ DISPLAY = NomosDeviceType(
     stat_count=6,
     lamp_count=6,
     has_title=True,
+    has_progress=True,
 )
 
 DEVICE_TYPES: dict[str, NomosDeviceType] = {
