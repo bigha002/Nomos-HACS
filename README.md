@@ -82,20 +82,35 @@ mosquitto_pub -h <broker> -t nomos/scale/kitchen/state \
 ### NOMOS Display
 
 Unlike Scale, Display doesn't report sensor data - it's a screen, so data
-flows the other way: Home Assistant renders templates and pushes the result
-to the device.
+flows the other way: entities you set push their value to the device.
 
 ```
 nomos/display/<device_id>/stats  ->  device subscribes, e.g.:
                                       {"stats": ["Outside: 54°F", "3 lights on", ...]}
 ```
 
-After adding a Display device, open its **Configure** option (Settings ->
-Devices & services -> the device -> Configure) to fill in up to 8 templates,
-one per stat row. Each is a normal Home Assistant template (e.g.
-`{{ states('sensor.outdoor_temperature') }}°F`); whenever an entity it
-references changes, the newly rendered set of 8 strings is republished to
-the `stats` topic above.
+Adding a Display device gives you 8 `text` entities named **Stat 1**...**Stat
+8** on it. Setting one (by hand, from a dashboard, or from an automation)
+republishes the full 8-value array to the `stats` topic above, and the
+device shows each string on its matching row. For example, to keep Stat 1
+mirroring another sensor:
+
+```yaml
+automation:
+  - alias: "NOMOS Display: outdoor temp on Stat 1"
+    trigger:
+      - platform: state
+        entity_id: sensor.outdoor_temperature
+    action:
+      - service: text.set_value
+        target:
+          entity_id: text.workshopconsole_stat_1
+        data:
+          value: "{{ states('sensor.outdoor_temperature') }}°F"
+```
+
+Values are restored across Home Assistant restarts and re-pushed to the
+device automatically.
 
 You can watch this without hardware too:
 
@@ -109,14 +124,14 @@ mosquitto_sub -h <broker> -t nomos/display/<device_id>/stats -v
    its own `key` (e.g. `"fan_controller"`) and describe its sensors,
    binary sensors, and buttons - or, for a device that displays
    Home-Assistant-driven data instead of reporting its own, set
-   `stat_count` to however many independent template slots it has.
+   `stat_count` to however many writable "Stat N" text entities it has.
 2. Add it to the `DEVICE_TYPES` dict.
 3. Add its display name to `strings.json` and
    `translations/en.json` under `selector.device_type.options`.
 
-Nothing else needs to change - the config flow (including the stat-template
-options flow when `stat_count > 0`), sensor/binary_sensor/button platforms,
-MQTT wiring, and device grouping all read from that registry.
+Nothing else needs to change - the config flow, sensor/binary_sensor/
+button/text platforms, MQTT wiring, and device grouping all read from that
+registry.
 
 ## Development / validation
 

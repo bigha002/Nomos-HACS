@@ -59,10 +59,10 @@ class NomosDeviceType:
     sensors: tuple[NomosSensorDescriptor, ...] = field(default_factory=tuple)
     binary_sensors: tuple[NomosBinarySensorDescriptor, ...] = field(default_factory=tuple)
     buttons: tuple[NomosButtonDescriptor, ...] = field(default_factory=tuple)
-    # Number of template-driven text slots this device type can display
-    # (e.g. the Display's stat readouts). 0 means "no template slots" - the
-    # options flow and the template-tracking/publish setup in __init__.py
-    # both skip entirely when this is 0.
+    # Number of writable "Stat N" text entities this device type exposes
+    # (e.g. the Display's stat readouts). Each one publishes the full stats
+    # array to the device whenever its value is set (see text.py). 0 means
+    # "no stat slots" - the text platform skips entirely when this is 0.
     stat_count: int = 0
 
 
@@ -113,12 +113,11 @@ SCALE = NomosDeviceType(
 )
 
 # --- NOMOS Display -----------------------------------------------------------
-# A terminal-style status display: N rows of text, each independently driven
-# by a Home Assistant template configured through this integration's options
-# flow (see config_flow.py) rather than by fixed JSON keys from the device
-# itself - the data flow for this device type runs HA -> device, the
-# opposite direction from Scale's sensors. stat_count must match the
-# firmware's DASHBOARD_STAT_COUNT (see the LILYGO Display project).
+# A terminal-style status display: N writable "Stat" text entities (text.py),
+# each independently set by you (directly, or from an automation driven by
+# any template/entity you want) - the data flow for this device type runs
+# HA -> device, the opposite direction from Scale's sensors. stat_count must
+# match the firmware's DASHBOARD_STAT_COUNT (see the LILYGO Display project).
 
 DISPLAY = NomosDeviceType(
     key="display",
