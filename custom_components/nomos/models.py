@@ -59,11 +59,19 @@ class NomosDeviceType:
     sensors: tuple[NomosSensorDescriptor, ...] = field(default_factory=tuple)
     binary_sensors: tuple[NomosBinarySensorDescriptor, ...] = field(default_factory=tuple)
     buttons: tuple[NomosButtonDescriptor, ...] = field(default_factory=tuple)
-    # Number of writable "Stat N" text entities this device type exposes
-    # (e.g. the Display's stat readouts). Each one publishes the full stats
-    # array to the device whenever its value is set (see text.py). 0 means
-    # "no stat slots" - the text platform skips entirely when this is 0.
+    # Number of stat slots this device type exposes (e.g. the Display's stat
+    # readouts). Each slot gets a "Stat N Title" and a "Stat N Value" text
+    # entity (see text.py); setting either republishes the combined stats
+    # array to the device. 0 means "no stat slots" - the text platform skips
+    # entirely when this is 0.
     stat_count: int = 0
+    # Number of writable "Lamp N" switch entities this device type exposes.
+    # Each one publishes the full lamps array to the device whenever it's
+    # toggled (see switch.py). 0 means "no lamps".
+    lamp_count: int = 0
+    # Whether this device type gets a single "Screen Title" text entity,
+    # published as a raw string (not JSON) to its own topic (see text.py).
+    has_title: bool = False
 
 
 # --- NOMOS Scale ------------------------------------------------------------
@@ -113,17 +121,21 @@ SCALE = NomosDeviceType(
 )
 
 # --- NOMOS Display -----------------------------------------------------------
-# A terminal-style status display: N writable "Stat" text entities (text.py),
-# each independently set by you (directly, or from an automation driven by
-# any template/entity you want) - the data flow for this device type runs
-# HA -> device, the opposite direction from Scale's sensors. stat_count must
-# match the firmware's DASHBOARD_STAT_COUNT (see the LILYGO Display project).
+# A terminal-style status display: N stat slots (each a "Title" + "Value"
+# text entity pair), N writable "Lamp" switch entities, and one "Screen
+# Title" text entity - all set by you (directly, or from an automation
+# driven by any template/entity you want). Data flow for this device type
+# runs HA -> device, the opposite direction from Scale's sensors. stat_count
+# and lamp_count must match the firmware's DASHBOARD_STAT_COUNT and
+# DASHBOARD_LAMP_COUNT (see the LILYGO Display project).
 
 DISPLAY = NomosDeviceType(
     key="display",
     name="Display",
     model="NOMOS Display",
-    stat_count=8,
+    stat_count=6,
+    lamp_count=6,
+    has_title=True,
 )
 
 DEVICE_TYPES: dict[str, NomosDeviceType] = {

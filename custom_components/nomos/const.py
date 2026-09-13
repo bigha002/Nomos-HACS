@@ -27,3 +27,21 @@ def stats_topic(device_type: str, device_id: str) -> str:
     shape (a fixed-size JSON array of strings) rather than a bare command.
     """
     return f"nomos/{device_type}/{device_id}/stats"
+
+
+def lamps_topic(device_type: str, device_id: str) -> str:
+    """Return the MQTT topic a device of this type/ID listens for lamp states on.
+
+    Same shape convention as stats_topic() (a JSON array), just a separate
+    topic/array since lamps are booleans, not strings.
+    """
+    return f"nomos/{device_type}/{device_id}/lamps"
+
+
+def title_topic(device_type: str, device_id: str) -> str:
+    """Return the MQTT topic a device of this type/ID listens for its screen title on.
+
+    A single raw string, not JSON-wrapped -- matches command_topic()'s
+    bare-string convention since there's only ever one value.
+    """
+    return f"nomos/{device_type}/{device_id}/title"
