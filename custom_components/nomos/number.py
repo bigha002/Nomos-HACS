@@ -10,13 +10,12 @@ from __future__ import annotations
 
 import logging
 
-from homeassistant.components.number import NumberEntity, NumberMode
+from homeassistant.components.number import NumberMode, RestoreNumber
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_NAME, PERCENTAGE
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
-from homeassistant.helpers.restore_state import RestoreNumber
 
 from .const import CONF_DEVICE_TYPE, DOMAIN, MANUFACTURER
 from .models import DEVICE_TYPES
@@ -35,7 +34,7 @@ async def async_setup_entry(
     async_add_entities([NomosProgressPercentNumber(entry, hass)])
 
 
-class NomosProgressPercentNumber(NumberEntity, RestoreNumber):
+class NomosProgressPercentNumber(RestoreNumber):
     """The progress bar's percentage, 0-100."""
 
     _attr_should_poll = False
