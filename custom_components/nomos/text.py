@@ -74,6 +74,12 @@ class NomosStatText(TextEntity, RestoreEntity):
 
         self._attr_unique_id = f"{entry.unique_id}_stat_{index}"
         self._attr_name = f"Stat {index + 1}"
+        # Required: add_to_platform_finish() writes state immediately on
+        # registration, before async_added_to_hass() runs -- a brand new
+        # entity with no prior state (RestoreEntity finds nothing) would
+        # otherwise never get _attr_native_value set at all and crash with
+        # AttributeError the moment HA tries to read native_value.
+        self._attr_native_value = ""
         self._attr_device_info = DeviceInfo(
             identifiers={(DOMAIN, entry.unique_id or entry.entry_id)},
             name=entry.data[CONF_NAME],
