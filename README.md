@@ -79,17 +79,44 @@ mosquitto_pub -h <broker> -t nomos/scale/kitchen/state \
 
 (assuming you added the device with device ID `kitchen`).
 
+### NOMOS Display
+
+Unlike Scale, Display doesn't report sensor data - it's a screen, so data
+flows the other way: Home Assistant renders templates and pushes the result
+to the device.
+
+```
+nomos/display/<device_id>/stats  ->  device subscribes, e.g.:
+                                      {"stats": ["Outside: 54°F", "3 lights on", ...]}
+```
+
+After adding a Display device, open its **Configure** option (Settings ->
+Devices & services -> the device -> Configure) to fill in up to 8 templates,
+one per stat row. Each is a normal Home Assistant template (e.g.
+`{{ states('sensor.outdoor_temperature') }}°F`); whenever an entity it
+references changes, the newly rendered set of 8 strings is republished to
+the `stats` topic above.
+
+You can watch this without hardware too:
+
+```bash
+mosquitto_sub -h <broker> -t nomos/display/<device_id>/stats -v
+```
+
 ## Adding a new device type
 
 1. In `custom_components/nomos/models.py`, add a new `NomosDeviceType` with
    its own `key` (e.g. `"fan_controller"`) and describe its sensors,
-   binary sensors, and buttons.
+   binary sensors, and buttons - or, for a device that displays
+   Home-Assistant-driven data instead of reporting its own, set
+   `stat_count` to however many independent template slots it has.
 2. Add it to the `DEVICE_TYPES` dict.
 3. Add its display name to `strings.json` and
    `translations/en.json` under `selector.device_type.options`.
 
-Nothing else needs to change - the config flow, sensor/binary_sensor/button
-platforms, MQTT wiring, and device grouping all read from that registry.
+Nothing else needs to change - the config flow (including the stat-template
+options flow when `stat_count > 0`), sensor/binary_sensor/button platforms,
+MQTT wiring, and device grouping all read from that registry.
 
 ## Development / validation
 

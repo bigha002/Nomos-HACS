@@ -18,10 +18,32 @@
       "already_configured": "This device is already configured."
     }
   },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Stat readout templates",
+        "description": "Each field is a Home Assistant template. Its rendered result is pushed to the matching stat row on the device whenever a referenced entity changes.",
+        "data": {
+          "stat_0_template": "Stat 1 template",
+          "stat_1_template": "Stat 2 template",
+          "stat_2_template": "Stat 3 template",
+          "stat_3_template": "Stat 4 template",
+          "stat_4_template": "Stat 5 template",
+          "stat_5_template": "Stat 6 template",
+          "stat_6_template": "Stat 7 template",
+          "stat_7_template": "Stat 8 template"
+        }
+      }
+    },
+    "abort": {
+      "no_options": "This device type has no configurable options."
+    }
+  },
   "selector": {
     "device_type": {
       "options": {
-        "scale": "Scale"
+        "scale": "Scale",
+        "display": "Display"
       }
     }
   }

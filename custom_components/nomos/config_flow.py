@@ -8,10 +8,15 @@ import voluptuous as vol
 
 from homeassistant import config_entries
 from homeassistant.const import CONF_NAME
+from homeassistant.core import callback
 from homeassistant.helpers import config_validation as cv
-from homeassistant.helpers.selector import SelectSelector, SelectSelectorConfig
+from homeassistant.helpers.selector import (
+    SelectSelector,
+    SelectSelectorConfig,
+    TemplateSelector,
+)
 
-from .const import CONF_DEVICE_ID, CONF_DEVICE_TYPE, DOMAIN
+from .const import CONF_DEVICE_ID, CONF_DEVICE_TYPE, DOMAIN, stat_template_key
 from .models import DEVICE_TYPES
 
 
@@ -19,6 +24,14 @@ class NomosConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     """Handle a config flow for adding one NOMOS device."""
 
     VERSION = 1
+
+    @staticmethod
+    @callback
+    def async_get_options_flow(
+        config_entry: config_entries.ConfigEntry,
+    ) -> NomosOptionsFlowHandler:
+        """Get the options flow for this device, if its device type has one."""
+        return NomosOptionsFlowHandler(config_entry)
 
     async def async_step_user(
         self, user_input: dict[str, Any] | None = None
@@ -60,3 +73,31 @@ class NomosConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         )
 
         return self.async_show_form(step_id="user", data_schema=schema, errors=errors)
+
+
+class NomosOptionsFlowHandler(config_entries.OptionsFlow):
+    """Options flow for device types with template-driven stat slots (stat_count > 0)."""
+
+    def __init__(self, config_entry: config_entries.ConfigEntry) -> None:
+        """Store the config entry this options flow belongs to."""
+        self.config_entry = config_entry
+
+    async def async_step_init(
+        self, user_input: dict[str, Any] | None = None
+    ) -> config_entries.ConfigFlowResult:
+        """Show one template field per stat slot the device type declares."""
+        device_type = DEVICE_TYPES[self.config_entry.data[CONF_DEVICE_TYPE]]
+
+        if device_type.stat_count == 0:
+            return self.async_abort(reason="no_options")
+
+        if user_input is not None:
+            return self.async_create_entry(data=user_input)
+
+        schema_dict: dict[Any, Any] = {}
+        for i in range(device_type.stat_count):
+            key = stat_template_key(i)
+            default = self.config_entry.options.get(key, "")
+            schema_dict[vol.Optional(key, default=default)] = TemplateSelector()
+
+        return self.async_show_form(step_id="init", data_schema=vol.Schema(schema_dict))
