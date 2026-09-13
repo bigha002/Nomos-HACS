@@ -1,5 +1,9 @@
 # NOMOS Devices for Home Assistant
 
+<p align="center">
+  <img src="Media/NOMOSLogo.png" alt="NOMOS logo" width="200">
+</p>
+
 A custom [HACS](https://hacs.xyz) integration for adding NOMOS-designed
 devices to Home Assistant. Each device type (Scale, and others to come) is
 registered in one place ("custom_components/nomos/models.py"), so wiring up a
@@ -144,7 +148,8 @@ push. Both should pass before you rely on a release.
 Custom repositories work fine indefinitely and need no review. If you later
 want this discoverable without users pasting a URL in, HACS has a formal
 submission process to their [`hacs/default`](https://github.com/hacs/default)
-repo: brand assets registered in `home-assistant/brands`, a passing HACS
+repo: brand assets registered in `home-assistant/brands` (the logo in
+`Media/NOMOSLogo.png` is ready for that submission), a passing HACS
 Action + hassfest, at least one GitHub release, and a PR reviewed by the HACS
 team (their docs note this can take a while). Not required to use or share
 this integration today.
