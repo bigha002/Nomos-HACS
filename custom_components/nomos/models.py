@@ -134,6 +134,14 @@ SCALE = NomosDeviceType(
 # runs HA -> device, the opposite direction from Scale's sensors. stat_count
 # and lamp_count must match the firmware's DASHBOARD_STAT_COUNT and
 # DASHBOARD_LAMP_COUNT (see the LILYGO Display project).
+#
+# The physical unit also has a rotary encoder's push button and 3 toggle
+# switches (no potentiometer -- dropped once touch turned out to never work
+# on this unit, freeing GPIO2/3 for switches instead of an encoder+pot) wired
+# to its free GPIO -- these run the opposite direction from the rest of
+# Display (device -> HA, like Scale's sensors), all published together in
+# one JSON object to the shared `state` topic. json_keys here must match
+# main.cpp's publishIoState().
 
 DISPLAY = NomosDeviceType(
     key="display",
@@ -142,6 +150,32 @@ DISPLAY = NomosDeviceType(
     stat_count=6,
     lamp_count=6,
     has_title=True,
+    binary_sensors=(
+        NomosBinarySensorDescriptor(
+            key="switch1",
+            name="Switch 1",
+            json_key="switch1",
+            icon="mdi:electric-switch",
+        ),
+        NomosBinarySensorDescriptor(
+            key="switch2",
+            name="Switch 2",
+            json_key="switch2",
+            icon="mdi:electric-switch",
+        ),
+        NomosBinarySensorDescriptor(
+            key="switch3",
+            name="Switch 3",
+            json_key="switch3",
+            icon="mdi:electric-switch",
+        ),
+        NomosBinarySensorDescriptor(
+            key="encoder_button",
+            name="Encoder Button",
+            json_key="encoderBtn",
+            icon="mdi:gesture-tap-button",
+        ),
+    ),
     has_progress=True,
 )
 
